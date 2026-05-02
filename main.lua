@@ -1,4 +1,4 @@
---// MAGNET GUN V2 (ULTRA FAST) - BY DINH_KHOI28215
+--// GET GUN + RETURN POSITION - BY DINH_KHOI28215
 
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
@@ -6,10 +6,10 @@ local hrp = char:WaitForChild("HumanoidRootPart")
 
 -- GUI MINI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "MagnetGunV2"
+gui.Name = "GetGunGUI"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,140,0,80)
+frame.Size = UDim2.new(0,140,0,70)
 frame.Position = UDim2.new(0.4,0,0.4,0)
 frame.BackgroundColor3 = Color3.fromRGB(10,10,10)
 frame.Active = true
@@ -19,60 +19,54 @@ Instance.new("UICorner", frame)
 local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(0,170,255)
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1,0,0,20)
-title.Text = "Teleport gun"
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(0,170,255)
-title.TextScaled = true
-
 local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(0.9,0,0,30)
-btn.Position = UDim2.new(0.05,0,0.35,0)
-btn.Text = "Magnet"
+btn.Size = UDim2.new(0.9,0,0,35)
+btn.Position = UDim2.new(0.05,0,0.25,0)
+btn.Text = "Get gun"
 btn.BackgroundColor3 = Color3.fromRGB(0,80,255)
 btn.TextColor3 = Color3.new(1,1,1)
 btn.TextScaled = true
 Instance.new("UICorner", btn)
 
-local credit = Instance.new("TextLabel", frame)
-credit.Size = UDim2.new(1,0,0,15)
-credit.Position = UDim2.new(0,0,1,-15)
-credit.Text = "By DINH_KHOI28215"
-credit.BackgroundTransparency = 1
-credit.TextScaled = true
-
--- 🔍 FIND GUN (tối ưu)
+-- tìm súng
 function findGun()
     for _,v in pairs(workspace:GetDescendants()) do
-        if v:IsA("Tool") and (v.Name:lower():find("gun") or v.Name:lower():find("revolver")) then
-            local handle = v:FindFirstChild("Handle")
-            if handle then return handle end
+        if v:IsA("Tool") and v.Name:lower():find("gun") then
+            local h = v:FindFirstChild("Handle")
+            if h then return h end
         end
-
         if v.Name == "GunDrop" and v:IsA("BasePart") then
             return v
         end
     end
 end
 
--- ⚡ MAGNET ULTRA
-local running = false
-
+-- BẤM = LẤY SÚNG + QUAY LẠI
 btn.MouseButton1Click:Connect(function()
-    running = not running
-    btn.Text = running and "ON" or "OFF"
+    local gun = findGun()
 
-    while running do
-        local gun = findGun()
+    if gun then
+        local oldPos = hrp.CFrame -- lưu vị trí chuẩn
 
-        if gun then
-            -- spam kéo cực nhanh
-            for i = 1,10 do
-                gun.CFrame = hrp.CFrame
-            end
+        -- thử hút nhanh trước
+        for i = 1,5 do
+            gun.CFrame = hrp.CFrame
         end
 
-        task.wait() -- nhanh nhất (1 frame)
+        task.wait()
+
+        -- nếu chưa nhặt -> TP
+        if (hrp.Position - gun.Position).Magnitude > 5 then
+            hrp.CFrame = gun.CFrame + Vector3.new(0,2,0)
+
+            task.wait(0.2)
+
+            -- 💀 QUAY LẠI CHẮC CHẮN
+            if oldPos then
+                hrp.CFrame = oldPos
+            end
+        end
+    else
+        warn("Không có súng!")
     end
 end)
