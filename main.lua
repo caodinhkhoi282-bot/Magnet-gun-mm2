@@ -1,10 +1,14 @@
---// GET GUN + RETURN POSITION - BY DINH_KHOI28215
+--// GET GUN MULTI FIX - BY DINH_KHOI28215
 
 local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
 
--- GUI MINI
+-- 🔄 luôn lấy lại nhân vật mới
+function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+-- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "GetGunGUI"
 
@@ -28,45 +32,51 @@ btn.TextColor3 = Color3.new(1,1,1)
 btn.TextScaled = true
 Instance.new("UICorner", btn)
 
--- tìm súng
+-- 🔍 tìm súng full map
 function findGun()
     for _,v in pairs(workspace:GetDescendants()) do
-        if v:IsA("Tool") and v.Name:lower():find("gun") then
-            local h = v:FindFirstChild("Handle")
-            if h then return h end
+        -- Tool
+        if v:IsA("Tool") then
+            local handle = v:FindFirstChild("Handle")
+            if handle then
+                return handle
+            end
         end
+
+        -- GunDrop
         if v.Name == "GunDrop" and v:IsA("BasePart") then
             return v
         end
     end
 end
 
--- BẤM = LẤY SÚNG + QUAY LẠI
+-- BẤM = LẤY SÚNG
 btn.MouseButton1Click:Connect(function()
+    local hrp = getHRP()
     local gun = findGun()
 
     if gun then
-        local oldPos = hrp.CFrame -- lưu vị trí chuẩn
+        local oldPos = hrp.CFrame
 
-        -- thử hút nhanh trước
+        -- thử hút
         for i = 1,5 do
             gun.CFrame = hrp.CFrame
         end
 
         task.wait()
 
-        -- nếu chưa nhặt -> TP
+        -- nếu chưa được -> TP
         if (hrp.Position - gun.Position).Magnitude > 5 then
             hrp.CFrame = gun.CFrame + Vector3.new(0,2,0)
+            task.wait(0.25)
 
-            task.wait(0.2)
-
-            -- 💀 QUAY LẠI CHẮC CHẮN
-            if oldPos then
+            -- quay lại
+            for i = 1,2 do
                 hrp.CFrame = oldPos
+                task.wait()
             end
         end
     else
-        warn("Không có súng!")
+        warn("Chưa có súng trong map!")
     end
 end)
